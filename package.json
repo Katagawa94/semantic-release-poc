@@ -1,0 +1,32 @@
+
+{
+  "name": "global-foo-template",
+  "version": "1.0.0",
+  "description": "A package that provides a globally available 'Foo' tagged template string for TypeScript projects.",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "typescript",
+    "tagged-template",
+    "global"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+},
+  "files": [
+    "dist",
+    "global.d.ts"
+  ]
+}
