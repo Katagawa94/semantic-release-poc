@@ -1,3 +1,3 @@
 # semantic-release-poc
 
-Release
+Release release
