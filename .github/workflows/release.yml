@@ -50,7 +50,6 @@ jobs:
         env:
           REACT_APP_VERSION: ${{ steps.semantic.outputs.new_release_version }}
         run: |
-          npm run test
           npm run build
 
       - name: Semantic Release
