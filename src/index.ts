@@ -1,0 +1,1 @@
+export { Foobar, Foobar as default } from './foobar';
