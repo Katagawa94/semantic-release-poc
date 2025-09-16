@@ -1,6 +1,6 @@
 
 {
-  "name": "global-foo-template",
+  "name": "@Katagawa94/global-foo-template",
   "version": "1.0.0",
   "description": "A package that provides a globally available 'Foo' tagged template string for TypeScript projects.",
   "main": "dist/cjs/index.js",
