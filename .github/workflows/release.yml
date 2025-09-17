@@ -1,16 +1,23 @@
 name: Release Foo Tagged Template
 on: workflow_dispatch
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
 jobs:
   release:
     name: Release Foo Tagged Template npm package
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout latest code from main
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: main
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -18,80 +25,17 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-
-      - name: Determine the next release version
-        id: semantic_dry_run
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          dry_run: true
-          extra_plugins: |
-            @semantic-release/git
-            @semantic-release/exec
-        env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Nothing to release
-        if: ${{!steps.semantic_dry_run.outputs.new_release_version}}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            core.setFailed('Nothing to release')
-
-      - name: Setup .npmrc for GitHub Packages
-        run: |
-          echo "@Katagawa94:registry=https://npm.pkg.github.com/" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@Katagawa94'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Prepare for the Release
+      - name: Build the project
+        run: npm run build
+
+      - name: Semantic release
+        run: npx semantic-release
         env:
-          REACT_APP_VERSION: ${{ steps.semantic.outputs.new_release_version }}
-        run: |
-          npm run build
-
-      - name: Semantic Release
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          dry_run: false
-          extra_plugins: |
-            @semantic-release/git
-        env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-      - name: Release failed
-        if: steps.semantic.outputs.new_release_published == 'false'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            core.setFailed('Release failed')
-
-      - name: Release published
-        run: |
-          echo ${{ steps.semantic.outputs.new_release_version }}
-          echo ${{ steps.semantic.outputs.new_release_major_version }}
-          echo ${{ steps.semantic.outputs.new_release_minor_version }}
-          echo ${{ steps.semantic.outputs.new_release_patch_version }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: ./dist
-
-      - name: Prepare released version for uploading
-        shell: bash
-        run: |
-          echo ${{ steps.semantic.outputs.new_release_version }} > released-version.txt
-
-      - name: Upload released version
-        uses: actions/upload-artifact@v4
-        with:
-          name: released-version
-          path: ./released-version.txt
-          retention-days: 1
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN}} 
